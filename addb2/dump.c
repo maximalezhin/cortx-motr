@@ -1137,12 +1137,12 @@ struct m0_addb2__id_intrp ids[] = {
 	  { &dec, &dec, &dec, &dec }, { "id", "opcode", "xid", "session_id" } },
 	{ M0_AVI_RPC_ITEM_ID_FETCH, "rpc-item-id-fetch",
 	  { &dec, &dec, &dec, &dec }, { "id", "opcode", "xid", "session_id" } },
-
 	{ M0_AVI_DTX0_SM_STATE,     "dtx0-state",    { &dtx0_state, SKIP2  } },
 	{ M0_AVI_DTX0_SM_COUNTER,   "",
 	  .ii_repeat = M0_AVI_DTX0_SM_COUNTER_END - M0_AVI_DTX0_SM_COUNTER,
 	  .ii_spec   = &dtx0_state_counter },
-
+	{ M0_AVI_RPC_POST_REPLY_STATE, "rpc-post-reply-state",
+	  { &dec, &dec }, {"sm_id", "state"} },
 	{ M0_AVI_BE_TX_STATE,     "tx-state",        { &tx_state, SKIP2  } },
 	{ M0_AVI_BE_TX_COUNTER,   "",
 	  .ii_repeat = M0_AVI_BE_TX_COUNTER_END - M0_AVI_BE_TX_COUNTER,
