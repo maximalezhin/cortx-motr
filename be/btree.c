@@ -1210,6 +1210,7 @@ static void btree_truncate(struct m0_be_btree *btree, struct m0_be_tx *tx,
 	/* Add one more reserve for non-leaf node. */
 	if (limit > 1)
 		limit--;
+	M0_POST(btree_node_invariant(btree, btree->bb_root, true));
 
 	node = btree->bb_root;
 
@@ -1284,6 +1285,7 @@ static void btree_truncate(struct m0_be_btree *btree, struct m0_be_tx *tx,
 			node = btree->bb_root;
 		}
 	}
+	M0_POST(btree_node_invariant(btree, btree->bb_root, true));
 	m0_format_footer_update(btree->bb_root);
 }
 
