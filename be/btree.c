@@ -287,6 +287,7 @@ static bool btree_node_invariant(const struct m0_be_btree *btree,
 		_0C(ergo(!node->bt_isleaf,
 			 m0_forall(i, node->bt_num_active_key + 1,
 				   node->bt_child_arr[i] != NULL &&
+				   node->bt_child_arr[i]->bt_header.hd_magic != 0 &&
 				   m0_be_seg_contains(btree->bb_seg,
 						      node->
 						      bt_child_arr[i])))) &&
@@ -1210,10 +1211,10 @@ static void btree_truncate(struct m0_be_btree *btree, struct m0_be_tx *tx,
 	/* Add one more reserve for non-leaf node. */
 	if (limit > 1)
 		limit--;
-	M0_POST(btree_node_invariant(btree, btree->bb_root, true));
-
+	M0_PRE(btree_node_invariant(btree, btree->bb_root, true));
 	node = btree->bb_root;
-
+	M0_LOG(M0_DEBUG, "node=%p lf=%d nr=%d idx=%d", node,
+	       !!node->bt_isleaf, node->bt_num_active_key, (int)limit);
 	while (node != NULL && limit > 0) {
 		parent = NULL;
 		if (!node->bt_isleaf) {
@@ -1243,6 +1244,8 @@ static void btree_truncate(struct m0_be_btree *btree, struct m0_be_tx *tx,
 			 */
 			break;
 		}
+		M0_LOG(M0_DEBUG, "node=%p lf=%d nr=%d idx=%d", node,
+		       !!node->bt_isleaf, node->bt_num_active_key, (int)limit);
 		btree_node_free(node, btree, tx);
 		if (parent != NULL) {
 			/*
