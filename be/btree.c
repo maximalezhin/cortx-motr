@@ -1857,7 +1857,7 @@ M0_INTERNAL void m0_be_btree_destroy_credit(struct m0_be_btree     *tree,
 	m0_bcount_t	       ksize;
 	m0_bcount_t	       vsize;
 		
-	M0_PRE(btree_node_invariant(tree, tree->bb_root, true));
+	//M0_PRE(btree_node_invariant(tree, tree->bb_root, true));
 	nodes_nr = iter_prepare(tree->bb_root, false);
 	items_nr = btree_count_items(tree, &ksize, &vsize);
 	M0_LOG(M0_DEBUG, "nodes=%d items=%d ksz=%d vsz%d",
@@ -1885,7 +1885,7 @@ M0_INTERNAL void m0_be_btree_clear_credit(struct m0_be_btree     *tree,
 	m0_bcount_t            ksize;
 	m0_bcount_t            vsize;
 
-	M0_PRE(btree_node_invariant(tree, tree->bb_root, true));
+	//M0_PRE(btree_node_invariant(tree, tree->bb_root, true));
 	nodes_nr = iter_prepare(tree->bb_root, false);
 	items_nr = btree_count_items(tree, &ksize, &vsize);
 	items_nr++;
