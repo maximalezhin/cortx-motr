@@ -1224,6 +1224,8 @@ static void btree_truncate(struct m0_be_btree *btree, struct m0_be_tx *tx,
 		}
 		if (!node->bt_isleaf)
 			continue;
+		M0_LOG(M0_DEBUG, "node=%p lf=%d nr=%d idx=%d", node,
+		       !!node->bt_isleaf, node->bt_num_active_key, (int)limit);
 
 		while (node->bt_num_active_key > 0 && limit > 0) {
 			limit--;
@@ -1244,8 +1246,9 @@ static void btree_truncate(struct m0_be_btree *btree, struct m0_be_tx *tx,
 			 */
 			break;
 		}
-		M0_LOG(M0_DEBUG, "node=%p lf=%d nr=%d idx=%d", node,
-		       !!node->bt_isleaf, node->bt_num_active_key, (int)limit);
+		M0_LOG(M0_DEBUG, "node=%p lf=%d parent nr=%d node nr=%d idx=%d",
+		       node, !!node->bt_isleaf, parent->bt_num_active_key,
+		       node->bt_num_active_key, (int)limit);
 		btree_node_free(node, btree, tx);
 		if (parent != NULL) {
 			/*
@@ -1260,11 +1263,16 @@ static void btree_truncate(struct m0_be_btree *btree, struct m0_be_tx *tx,
 			 * node->bt_child_arr[node->bt_num_active_key]
 			 * leaf node
 			 */
-			if (i > 0 && limit > 0) {
+			if (i > 0) {
+				/* If limit is zero, reserved credit will be used.
+				 * Refer comment at the start of this function.
+				 */
+				if (limit > 0)
+					limit--;
+
 				btree_pair_release(btree, tx,
 						&parent->bt_kv_arr[i-1]);
 
-				limit--;
 				parent->bt_num_active_key--;
 			}
 
@@ -1848,7 +1856,8 @@ M0_INTERNAL void m0_be_btree_destroy_credit(struct m0_be_btree     *tree,
 	int		       items_nr;
 	m0_bcount_t	       ksize;
 	m0_bcount_t	       vsize;
-
+		
+	M0_PRE(btree_node_invariant(tree, tree->bb_root, true));
 	nodes_nr = iter_prepare(tree->bb_root, false);
 	items_nr = btree_count_items(tree, &ksize, &vsize);
 	M0_LOG(M0_DEBUG, "nodes=%d items=%d ksz=%d vsz%d",
@@ -1876,6 +1885,7 @@ M0_INTERNAL void m0_be_btree_clear_credit(struct m0_be_btree     *tree,
 	m0_bcount_t            ksize;
 	m0_bcount_t            vsize;
 
+	M0_PRE(btree_node_invariant(tree, tree->bb_root, true));
 	nodes_nr = iter_prepare(tree->bb_root, false);
 	items_nr = btree_count_items(tree, &ksize, &vsize);
 	items_nr++;
@@ -2255,6 +2265,8 @@ static int iter_prepare(struct m0_be_bnode *node, bool print)
 
 	head->bt_next = NULL;
 	m0_format_footer_update(head);
+	M0_LOG(M0_DEBUG, "node=%p lf=%d node nr=%d",
+               node, !!node->bt_isleaf, node->bt_num_active_key);
 	while (head != NULL) {
 		if (head->bt_level < current_level) {
 			current_level = head->bt_level;
